@@ -1,0 +1,6 @@
+Abc Begin; End abc. def End Begin
+Begin 'abc' End.....
+Call abc
+Call Begin "call" Begin Call
+End. supply ginbe
+*
