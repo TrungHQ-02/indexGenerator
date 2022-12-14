@@ -60,8 +60,8 @@ void printStopWordList(StopWNode *header)
     StopWNode *p = header;
     while (p != NULL)
     {
-        cout << p->stopWord << " ";
-        cout << endl;
+        std::cout << p->stopWord << " ";
+        std::cout << endl;
         p = p->next;
     }
 }
@@ -103,8 +103,8 @@ void printPageWordList(PageNode *h)
     PageNode *p = h;
     while (p != NULL)
     {
-        cout << p->pageNumber << " ";
-        cout << endl;
+        std::cout << p->pageNumber << " ";
+        std::cout << endl;
         p = p->next;
     }
 }
@@ -196,19 +196,19 @@ void printIndexList(IndexNode *h)
     IndexNode *p = h;
     while (p != NULL)
     {
-        cout << setw(14) << left << p->keyWord;
-        cout << "- frequency: " << setw(5) << p->numberOfPages
-             << "At line: ";
+        std::cout << setw(14) << left << p->keyWord;
+        std::cout << "- frequency: " << setw(5) << p->numberOfPages
+                  << "At line: ";
         PageNode *cur = p->head;
         while (cur != NULL)
         {
             if (cur != p->head)
-                cout << ", ";
-            cout << cur->pageNumber;
+                std::cout << ", ";
+            std::cout << cur->pageNumber;
             cur = cur->next;
         }
-        cout << endl
-             << "-------------" << endl;
+        std::cout << endl
+                  << "-------------" << endl;
         p = p->next;
     }
 }
@@ -263,68 +263,44 @@ int checkStopWord(string c, StopWNode *headerOfStopW)
 
 int main()
 {
-    // Bulid Stop Word List
+    int choice1 = 0;
     StopWNode *headerOfStopWord = NULL;
-    ifstream file("stopWord.txt");
-    string str;
-    string file_contents;
-    while (getline(file, str))
-    {
-        headerOfStopWord = addStopWNodeLast(str, headerOfStopWord);
-    }
-    // printStopWordList(headerOfStopWord);
-    // DONE READING STOPWORD FILE
-
-    // Start building index table
-    char ch;
-    fstream fin("VanBan.txt", fstream::in);
     IndexNode *headerOfIndexList = NULL;
-
-    string newWord = "";
-    int countLine = 1;
-    while (fin >> noskipws >> ch)
+    string swFile;
+    do
     {
-        if (ch == '*')
+        std::cout << "-----Nhap ten file stopWord-----" << endl;
+        cin >> swFile;
+        // Bulid Stop Word List
+        ifstream file(swFile);
+        string str;
+        while (getline(file, str))
         {
-            // gap ki tu * thi dung doc van ban
-            countLine--;
-            break;
+            headerOfStopWord = addStopWNodeLast(str, headerOfStopWord);
         }
-        if (isalpha(ch))
-        {
-            char chLower = tolower(ch);
-            newWord.push_back(chLower);
-        }
+        // DONE READING STOPWORD FILE
 
-        else
+        // Start building index table
+        char ch;
+        std::cout << "-----Nhap ten file van ban-----" << endl;
+        string textFile;
+        cin >> textFile;
+        fstream fin(textFile, fstream::in);
+        string newWord = "";
+        int countLine = 1;
+        do
         {
-            if (newWord != "")
+            fin >> noskipws >> ch;
+            // Neu het file
+            if (fin.eof())
             {
-                if (checkStopWord(newWord, headerOfStopWord))
+                if (newWord != "")
                 {
-                    // process when keyword is new
-                    IndexNode *cursorNode = headerOfIndexList;
-                    if (cursorNode == NULL)
+                    if (checkStopWord(newWord, headerOfStopWord))
                     {
-                        PageNode *pageH = NULL;
-                        PageNode *pageT = NULL;
-                        pageH = addPageToLast(countLine, pageH);
-                        pageT = findLastPageNode(pageH);
-                        headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
-                    }
-                    else if (cursorNode->next == NULL)
-                    {
-                        if (cursorNode->keyWord == newWord)
-                        {
-                            cursorNode->numberOfPages++;
-                            int pageCheck = cursorNode->tail->pageNumber == countLine;
-                            if (pageCheck != 1)
-                            {
-                                cursorNode->head = addPageToLast(countLine, cursorNode->head);
-                                cursorNode->tail = findLastPageNode(cursorNode->head);
-                            }
-                        }
-                        else
+                        // process when keyword is new
+                        IndexNode *cursorNode = headerOfIndexList;
+                        if (cursorNode == NULL)
                         {
                             PageNode *pageH = NULL;
                             PageNode *pageT = NULL;
@@ -332,21 +308,39 @@ int main()
                             pageT = findLastPageNode(pageH);
                             headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
                         }
-                    }
-                    else
-                    {
-                        while (cursorNode->next != NULL)
+                        else
                         {
-                            if (cursorNode->keyWord == newWord)
+                            while (cursorNode->next != NULL)
                             {
-                                break;
+                                if (cursorNode->keyWord == newWord)
+                                {
+                                    break;
+                                }
+                                cursorNode = cursorNode->next;
                             }
-                            cursorNode = cursorNode->next;
-                        }
 
-                        if (cursorNode->next == NULL)
-                        {
-                            if (cursorNode->keyWord == newWord)
+                            if (cursorNode->next == NULL)
+                            {
+                                if (cursorNode->keyWord == newWord)
+                                {
+                                    cursorNode->numberOfPages++;
+                                    int pageCheck = cursorNode->tail->pageNumber == countLine;
+                                    if (pageCheck != 1)
+                                    {
+                                        cursorNode->head = addPageToLast(countLine, cursorNode->head);
+                                        cursorNode->tail = findLastPageNode(cursorNode->head);
+                                    }
+                                }
+                                else
+                                {
+                                    PageNode *pageH = NULL;
+                                    PageNode *pageT = NULL;
+                                    pageH = addPageToLast(countLine, pageH);
+                                    pageT = findLastPageNode(pageH);
+                                    headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
+                                }
+                            }
+                            else
                             {
                                 cursorNode->numberOfPages++;
                                 int pageCheck = cursorNode->tail->pageNumber == countLine;
@@ -356,42 +350,150 @@ int main()
                                     cursorNode->tail = findLastPageNode(cursorNode->head);
                                 }
                             }
-                            else
-                            {
-                                PageNode *pageH = NULL;
-                                PageNode *pageT = NULL;
-                                pageH = addPageToLast(countLine, pageH);
-                                pageT = findLastPageNode(pageH);
-                                headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
-                            }
+                        }
+                    }
+                }
+                break;
+            }
+            // Neu doc duoc mot ki tu la chu
+            if (isalpha(ch))
+            {
+                char chLower = tolower(ch);
+                newWord.push_back(chLower);
+            }
+            // Neu doc duoc mot ki tu khong la chu
+            else
+            {
+                if (newWord != "")
+                {
+                    if (checkStopWord(newWord, headerOfStopWord))
+                    {
+                        // process when keyword is new
+                        IndexNode *cursorNode = headerOfIndexList;
+                        if (cursorNode == NULL)
+                        {
+                            PageNode *pageH = NULL;
+                            PageNode *pageT = NULL;
+                            pageH = addPageToLast(countLine, pageH);
+                            pageT = findLastPageNode(pageH);
+                            headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
                         }
                         else
                         {
-                            cursorNode->numberOfPages++;
-                            int pageCheck = cursorNode->tail->pageNumber == countLine;
-                            if (pageCheck != 1)
+                            while (cursorNode->next != NULL)
                             {
-                                cursorNode->head = addPageToLast(countLine, cursorNode->head);
-                                cursorNode->tail = findLastPageNode(cursorNode->head);
+                                if (cursorNode->keyWord == newWord)
+                                {
+                                    break;
+                                }
+                                cursorNode = cursorNode->next;
+                            }
+
+                            if (cursorNode->next == NULL)
+                            {
+                                if (cursorNode->keyWord == newWord)
+                                {
+                                    cursorNode->numberOfPages++;
+                                    int pageCheck = cursorNode->tail->pageNumber == countLine;
+                                    if (pageCheck != 1)
+                                    {
+                                        cursorNode->head = addPageToLast(countLine, cursorNode->head);
+                                        cursorNode->tail = findLastPageNode(cursorNode->head);
+                                    }
+                                }
+                                else
+                                {
+                                    PageNode *pageH = NULL;
+                                    PageNode *pageT = NULL;
+                                    pageH = addPageToLast(countLine, pageH);
+                                    pageT = findLastPageNode(pageH);
+                                    headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
+                                }
+                            }
+                            else
+                            {
+                                cursorNode->numberOfPages++;
+                                int pageCheck = cursorNode->tail->pageNumber == countLine;
+                                if (pageCheck != 1)
+                                {
+                                    cursorNode->head = addPageToLast(countLine, cursorNode->head);
+                                    cursorNode->tail = findLastPageNode(cursorNode->head);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            newWord = "";
-            if (ch == '\n')
+                newWord = "";
+                if (ch == '\n')
+                {
+                    countLine++;
+                    continue;
+                }
+            }
+        } while (true);
+
+        // Tao bang chi muc xong
+
+        std::cout << "Bang chi muc da duoc tao thanh cong!" << endl;
+        int choice = 0;
+        do
+        {
+            std::cout << "Ban muon in ra console hay luu vao file" << endl;
+            std::cout << "1. In ra console" << endl;
+            std::cout << "2. Luu vao file" << endl;
+            cin >> choice;
+            if (choice == 1)
             {
-                countLine++;
-                continue;
+                std::cout << "--------------------Index Table--------------------" << endl;
+                sortIndexList(headerOfIndexList);
+                printIndexList(headerOfIndexList);
             }
-        }
-    }
-    cout << "Number Of Lines in VanBan.txt: " << countLine << endl;
-    cout << "--------------------Index Table--------------------" << endl;
-    sortIndexList(headerOfIndexList);
-    printIndexList(headerOfIndexList);
+            else if (choice == 2)
+            {
+                std::cout << "Nhap ten file" << endl;
+                string outFile;
+                cin >> outFile;
+                ofstream myfile(outFile);
+                sortIndexList(headerOfIndexList);
+                myfile << "--------------------Index Table--------------------" << endl;
+                if (myfile.is_open())
+                {
+                    IndexNode *h = headerOfIndexList;
+                    if (h == NULL)
+                        cout << "Bang chi muc rong" << endl;
+                    IndexNode *p = h;
+                    while (p != NULL)
+                    {
+                        myfile << setw(14) << left << p->keyWord;
+                        myfile << "- frequency: " << setw(5) << p->numberOfPages
+                               << "At line: ";
+                        PageNode *cur = p->head;
+                        while (cur != NULL)
+                        {
+                            if (cur != p->head)
+                                myfile << ", ";
+                            myfile << cur->pageNumber;
+                            cur = cur->next;
+                        }
+                        myfile << endl
+                               << "-------------" << endl;
+                        p = p->next;
+                    }
+                    myfile.close();
+                }
+                else
+                    std::cout << "Khong mo duoc file" << endl;
+            }
 
+        } while (!(choice == 1 || choice == 2));
+        std::cout << "Ban co muon tiep tuc khong?" << endl;
+        std::cout << "1. Co" << endl;
+        std::cout << "2. Khong" << endl;
+        cin >> choice1;
+        if (choice1 == 2)
+            std::cout << "Goodbye!";
+    } while (choice1 != 2);
     freeSTopWList(headerOfStopWord);
     freeIndexList(headerOfIndexList);
 

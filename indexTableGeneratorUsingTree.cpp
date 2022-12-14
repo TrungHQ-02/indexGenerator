@@ -61,8 +61,8 @@ void printStopWordList(StopWNode *header)
     StopWNode *p = header;
     while (p != NULL)
     {
-        cout << p->stopWord << " ";
-        cout << endl;
+        std::cout << p->stopWord << " ";
+        std::cout << endl;
         p = p->next;
     }
 }
@@ -104,8 +104,8 @@ void printPageWordList(PageNode *h)
     PageNode *p = h;
     while (p != NULL)
     {
-        cout << p->pageNumber << " ";
-        cout << endl;
+        std::cout << p->pageNumber << " ";
+        std::cout << endl;
         p = p->next;
     }
 }
@@ -206,20 +206,41 @@ void printInorder(IndexNode *r)
     if (r == NULL)
         return;
     printInorder(r->leftChild);
-    cout << setw(12) << left << r->keyWord << " - frequency: "
-         << setw(5) << r->numberOfPages << "At line ";
+    std::cout << setw(12) << left << r->keyWord << " - frequency: "
+              << setw(5) << r->numberOfPages << "At line ";
 
     PageNode *cur = r->head;
     while (cur != NULL)
     {
         if (cur != r->head)
-            cout << ", ";
-        cout << cur->pageNumber;
+            std::cout << ", ";
+        std::cout << cur->pageNumber;
         cur = cur->next;
     }
-    cout << endl;
-    cout << "---------------" << endl;
+    std::cout << endl;
+    std::cout << "---------------" << endl;
     printInorder(r->rightChild);
+}
+
+void printInorderToFile(IndexNode *r, ofstream &filestream)
+{
+    if (r == NULL)
+        return;
+    printInorderToFile(r->leftChild, filestream);
+    filestream << setw(12) << left << r->keyWord << " - frequency: "
+               << setw(5) << r->numberOfPages << "At line ";
+
+    PageNode *cur = r->head;
+    while (cur != NULL)
+    {
+        if (cur != r->head)
+            filestream << ", ";
+        filestream << cur->pageNumber;
+        cur = cur->next;
+    }
+    filestream << endl;
+    filestream << "---------------" << endl;
+    printInorderToFile(r->rightChild, filestream);
 }
 
 int checkStopWord(string c, StopWNode *headerOfStopW)
@@ -238,65 +259,120 @@ int checkStopWord(string c, StopWNode *headerOfStopW)
 
 int main()
 {
-    // Bulid Stop Word List
+    int choice1 = 0;
     StopWNode *headerOfStopWord = NULL;
-    ifstream file("stopWord.txt");
-    string str;
-    string file_contents;
-    while (getline(file, str))
-    {
-        headerOfStopWord = addStopWNodeLast(str, headerOfStopWord);
-    }
-    // printStopWordList(headerOfStopWord);
-    // DONE READING STOPWORD FILE
-
-    // Start building index table
-    char ch;
-    fstream fin("VanBan.txt", fstream::in);
     IndexNode *root = NULL;
-
-    string newWord = "";
-    int countLine = 1;
-    while (fin >> noskipws >> ch)
+    string swFile;
+    do
     {
-        if (ch == '*')
+        std::cout << "-----Nhap ten file stopWord-----" << endl;
+        cin >> swFile;
+        // Bulid Stop Word List
+        ifstream file(swFile);
+        string str;
+        while (getline(file, str))
         {
-            // gap ki tu * thi dung doc van ban
-            countLine--;
-            break;
+            headerOfStopWord = addStopWNodeLast(str, headerOfStopWord);
         }
-        if (isalpha(ch))
-        {
-            char chLower = tolower(ch);
-            newWord.push_back(chLower);
-        }
+        // DONE READING STOPWORD FILE
 
-        else
+        // Start building index table
+        char ch;
+        std::cout << "-----Nhap ten file van ban-----" << endl;
+        string textFile;
+        cin >> textFile;
+        fstream fin(textFile, fstream::in);
+        string newWord = "";
+        int countLine = 1;
+        do
         {
-            if (newWord != "")
+            fin >> noskipws >> ch;
+            // Neu het file
+            if (fin.eof())
             {
-                if (checkStopWord(newWord, headerOfStopWord))
+                if (newWord != "")
                 {
-                    PageNode *pageH = NULL;
-                    PageNode *pageT = NULL;
-                    pageH = addPageToLast(countLine, pageH);
-                    pageT = findLastPageNode(pageH);
-                    root = insertIntoTree(newWord, 1, pageH, pageT, root, countLine);
+                    if (checkStopWord(newWord, headerOfStopWord))
+                    {
+                        PageNode *pageH = NULL;
+                        PageNode *pageT = NULL;
+                        pageH = addPageToLast(countLine, pageH);
+                        pageT = findLastPageNode(pageH);
+                        root = insertIntoTree(newWord, 1, pageH, pageT, root, countLine);
+                    }
+                }
+                break;
+            }
+            // Neu doc duoc mot ki tu la chu
+            if (isalpha(ch))
+            {
+                char chLower = tolower(ch);
+                newWord.push_back(chLower);
+            }
+            // Neu doc duoc mot ki tu khong la chu
+            else
+            {
+                if (newWord != "")
+                {
+                    if (checkStopWord(newWord, headerOfStopWord))
+                    {
+                        PageNode *pageH = NULL;
+                        PageNode *pageT = NULL;
+                        pageH = addPageToLast(countLine, pageH);
+                        pageT = findLastPageNode(pageH);
+                        root = insertIntoTree(newWord, 1, pageH, pageT, root, countLine);
+                    }
+                }
+
+                newWord = "";
+                if (ch == '\n')
+                {
+                    countLine++;
+                    continue;
                 }
             }
+        } while (true);
 
-            newWord = "";
-            if (ch == '\n')
+        // Tao bang chi muc xong
+
+        std::cout << "Bang chi muc da duoc tao thanh cong!" << endl;
+        int choice = 0;
+        do
+        {
+            std::cout << "Ban muon in ra console hay luu vao file" << endl;
+            std::cout << "1. In ra console" << endl;
+            std::cout << "2. Luu vao file" << endl;
+            cin >> choice;
+            if (choice == 1)
             {
-                countLine++;
-                continue;
+                std::cout << "--------------------Index Table--------------------" << endl;
+                printInorder(root);
             }
-        }
-    }
-    cout << "Number Of Lines in VanBan.txt: " << countLine << endl;
-    cout << "-------------Index Table-------------" << endl;
-    // printIndexList(headerOfIndexList);
-    printInorder(root);
+            else if (choice == 2)
+            {
+                std::cout << "Nhap ten file" << endl;
+                string outFile;
+                cin >> outFile;
+                ofstream myfile(outFile);
+                if (myfile.is_open())
+                {
+
+                    myfile << "--------------------Index Table--------------------" << endl;
+                    printInorderToFile(root, myfile);
+                    myfile.close();
+                }
+                else
+                    std::cout << "Khong mo duoc file" << endl;
+            }
+
+        } while (!(choice == 1 || choice == 2));
+        std::cout << "Ban co muon tiep tuc khong?" << endl;
+        std::cout << "1. Co" << endl;
+        std::cout << "2. Khong" << endl;
+        cin >> choice1;
+        if (choice1 == 2)
+            std::cout << "Goodbye!";
+    } while (choice1 != 2);
 
     freeSTopWList(headerOfStopWord);
     return 0;

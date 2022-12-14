@@ -1,0 +1,9 @@
+stopWord.txt 
+VanBan.txt
+2
+it.txt
+
+stopWordTest.txt
+VanBanTest.txt
+2
+trung.txt
