@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iomanip>
 #define MAX 1000
-
+int countWord = 0;
 using namespace std;
 
 struct StopWordNodeType
@@ -307,6 +307,7 @@ int main()
                             pageH = addPageToLast(countLine, pageH);
                             pageT = findLastPageNode(pageH);
                             headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
+                            countWord++;
                         }
                         else
                         {
@@ -338,6 +339,7 @@ int main()
                                     pageH = addPageToLast(countLine, pageH);
                                     pageT = findLastPageNode(pageH);
                                     headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
+                                    countWord++;
                                 }
                             }
                             else
@@ -377,6 +379,7 @@ int main()
                             pageH = addPageToLast(countLine, pageH);
                             pageT = findLastPageNode(pageH);
                             headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
+                            countWord++;
                         }
                         else
                         {
@@ -408,6 +411,7 @@ int main()
                                     pageH = addPageToLast(countLine, pageH);
                                     pageT = findLastPageNode(pageH);
                                     headerOfIndexList = addIndexNodeLast(newWord, 1, pageH, pageT, headerOfIndexList);
+                                    countWord++;
                                 }
                             }
                             else
@@ -439,6 +443,7 @@ int main()
         int choice = 0;
         do
         {
+            cout << "So tu: " << countWord;
             std::cout << "Ban muon in ra console hay luu vao file" << endl;
             std::cout << "1. In ra console" << endl;
             std::cout << "2. Luu vao file" << endl;

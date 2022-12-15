@@ -189,7 +189,7 @@ IndexNode *insertIntoTree(string kw, int num,
         return root;
     }
 
-    if (kw < root->keyWord)
+    if (kw > root->keyWord)
     {
         root->leftChild = insertIntoTree(kw, num, header, tail, root->leftChild, line);
     }
@@ -222,24 +222,37 @@ void printInorder(IndexNode *r)
     printInorder(r->rightChild);
 }
 
+int countPageNode(PageNode *head)
+{
+    if (head == NULL)
+        return 0;
+    else
+    {
+        return 1 + countPageNode(head->next);
+    }
+}
+
 void printInorderToFile(IndexNode *r, ofstream &filestream)
 {
     if (r == NULL)
         return;
     printInorderToFile(r->leftChild, filestream);
-    filestream << setw(12) << left << r->keyWord << " - frequency: "
-               << setw(5) << r->numberOfPages << "At line ";
-
-    PageNode *cur = r->head;
-    while (cur != NULL)
+    if (r->numberOfPages > countPageNode(r->head))
     {
-        if (cur != r->head)
-            filestream << ", ";
-        filestream << cur->pageNumber;
-        cur = cur->next;
+        filestream << setw(12) << left << r->keyWord << " - frequency: "
+                   << setw(5) << r->numberOfPages << "At line ";
+
+        PageNode *cur = r->head;
+        while (cur != NULL)
+        {
+            if (cur != r->head)
+                filestream << ", ";
+            filestream << cur->pageNumber;
+            cur = cur->next;
+        }
+        filestream << endl;
+        filestream << "---------------" << endl;
     }
-    filestream << endl;
-    filestream << "---------------" << endl;
     printInorderToFile(r->rightChild, filestream);
 }
 
